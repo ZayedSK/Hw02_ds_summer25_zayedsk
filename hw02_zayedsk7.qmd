@@ -29,7 +29,6 @@ z_score(25.77, 23.54, 2.442)
 
 ```
 
-
 ### Question 2
 
 Write a function to calculate the natural log of a number multiplied by the common log of the same number divided by the cube root of a given prime number, $\dfrac{\ln x \times \log x }{\sqrt[3]{p}}$.\
@@ -45,7 +44,6 @@ log_math <- function(x, p) {
 log_math(32, 11)
 
 ```
-
 
 ### Question 3
 
@@ -85,12 +83,43 @@ c(2024, 3021, 2000, 1800, 800, 5050, 600, 7156)[(c(2024, 3021, 2000, 1800, 800, 
 
 Generate a sequence of dates from **January 1, 2015** to **December 31, 2025**, spaced by every **two months**. Extract the **year**, **quarter**, and **ISO week number** for each date.
 
+```{r}
+library(lubridate)
+
+date_seq <- seq.Date(from = as.Date("2015-01-01"),
+                     to = as.Date("2025-12-31"),
+                     by = "2 months")
+
+data.frame(
+  date = date_seq,
+  year = year(date_seq),
+  quarter = quarter(date_seq),
+  iso_week = isoweek(date_seq)
+)
+
+```
+
 ### Question 6:
 
 Given the following dates, compute the difference in **months** and **weeks** between each consecutive pair.
 
 ``` r
 sample_dates <- c("2018-03-15", "2020-07-20", "2023-01-10", "2025-09-05")
+```
+
+```{r}
+sample_dates <- as.Date(c("2018-03-15", "2020-07-20", "2023-01-10", "2025-09-05"))
+
+month_diff <- interval(sample_dates[-length(sample_dates)], sample_dates[-1]) %/% months(1)
+week_diff <- difftime(sample_dates[-1], sample_dates[-length(sample_dates)], units = "weeks")
+
+data.frame(
+  start_date = sample_dates[-length(sample_dates)],
+  end_date = sample_dates[-1],
+  months_apart = month_diff,
+  weeks_apart = as.numeric(week_diff)
+)
+
 ```
 
 ### Question 7: Higher-Order Functions with purrr
@@ -101,12 +130,38 @@ Using `map()` and `map_dbl()`, compute the **mean**, **median**, and **standard 
 num_lists <- list(c(4, 16, 25, 36, 49), c(2.3, 5.7, 8.1, 11.4), c(10, 20, 30, 40, 50))
 ```
 
+```{r}
+library(purrr)
+
+num_lists <- list(c(4, 16, 25, 36, 49), c(2.3, 5.7, 8.1, 11.4), c(10, 20, 30, 40, 50))
+
+means <- map_dbl(num_lists, mean)
+medians <- map_dbl(num_lists, median)
+sds <- map_dbl(num_lists, sd)
+
+data.frame(
+  mean = means,
+  median = medians,
+  sd = sds
+)
+
+```
+
 ### Question 8: Combining lubridate and purrr
 
 Given a list of mixed date formats, use `map()` and `possibly()` from `purrr` to safely convert them to **Date** format and extract the **month name**.
 
 ``` r
 date_strings <- list("2023-06-10", "2022/12/25", "15-Aug-2021", "InvalidDate")
+```
+
+```{r}
+date_strings <- list("2023-06-10", "2022/12/25", "15-Aug-2021", "InvalidDate")
+
+safe_parse <- possibly(function(x) parse_date_time(x, orders = c("ymd", "Ymd", "d-b-Y", "Y/m/d")), NA)
+
+map(date_strings, ~ month(safe_parse(.x), label = TRUE, abbr = FALSE))
+
 ```
 
 ## Submission
